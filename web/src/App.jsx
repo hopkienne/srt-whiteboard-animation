@@ -1266,7 +1266,7 @@ export function StudioEditor({ project, onAutoSave, onNewProject, onHome, onProj
       if (activeRenderVersionRef.current !== sourceVersion) return;
       activeRenderVersionRef.current = null;
       setBusy(false);
-      setNotice("Mất kết nối với renderer local.");
+      setNotice("Mất kết nối với dịch vụ tạo video.");
     }
   }
 
@@ -1294,7 +1294,7 @@ export function StudioEditor({ project, onAutoSave, onNewProject, onHome, onProj
       if (activeRenderVersionRef.current !== sourceVersion) return;
       activeRenderVersionRef.current = null;
       setBusy(false);
-      setNotice(`Render thất bại: ${error.message}. Hãy chắc rằng API local đang chạy.`);
+      setNotice(`Render thất bại: ${error.message}. Vui lòng thử lại sau.`);
     }
   }
 

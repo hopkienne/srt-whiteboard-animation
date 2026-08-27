@@ -61,7 +61,7 @@ export function ProjectsPage() {
       </header>
 
       <section className="projects-hero">
-        <span className="eyebrow">Thư viện cục bộ</span>
+        <span className="eyebrow">Thư viện trên thiết bị</span>
         <h1>Dự án của bạn</h1>
         <p>Mở lại dự án đã làm hoặc bắt đầu từ một tài liệu mới. Dữ liệu được lưu bằng IndexedDB trên trình duyệt này.</p>
       </section>
