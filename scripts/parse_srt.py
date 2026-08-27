@@ -24,6 +24,10 @@ import re
 import sys
 from pathlib import Path
 
+from _utf8_stdio import configure_utf8_stdio
+
+configure_utf8_stdio()
+
 _TIME = re.compile(r"(\d+):(\d{2}):(\d{2})[,.](\d{1,3})")
 
 

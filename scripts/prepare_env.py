@@ -20,6 +20,10 @@ import sys
 import venv
 from pathlib import Path
 
+from _utf8_stdio import configure_utf8_stdio
+
+configure_utf8_stdio()
+
 # skill 根目录 = 本脚本向上两级
 SKILL_ROOT = Path(__file__).resolve().parent.parent
 VENV_ROOT = SKILL_ROOT / ".venv"

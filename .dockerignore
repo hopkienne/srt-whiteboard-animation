@@ -1,0 +1,13 @@
+.git
+.github
+.pytest_cache
+.venv
+**/__pycache__
+**/*.py[cod]
+web/.local-data
+web/node_modules
+web/dist
+*.mp4
+design-qa*.jpg
+design-qa*.png
+design-reference*.png

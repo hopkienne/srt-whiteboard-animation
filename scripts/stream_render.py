@@ -24,6 +24,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 
+from _utf8_stdio import configure_utf8_stdio
+
+configure_utf8_stdio()
+
 import cv2
 import numpy as np
 
@@ -673,23 +677,80 @@ class TipOverlay:
         self.hand = hand
         self.mask = mask
         self.h, self.w = hand.shape[:2]
-        self.mask_inv = 1.0 - mask
         # 笔尖在素材中的像素坐标（落墨点要与之对齐）
         # Map normalized anchors exactly onto the source image's pixel range.
         self.tip_px = int(round((self.w - 1) * np.clip(tip_anchor_x, 0.0, 1.0)))
         self.tip_py = int(round((self.h - 1) * np.clip(tip_anchor_y, 0.0, 1.0)))
 
-    def stamp(self, canvas: np.ndarray, x: int, y: int) -> np.ndarray:
-        """让素材的笔尖锚点对齐到画布坐标 (x, y)（即落墨点）。"""
+    def stamp(
+        self,
+        canvas: np.ndarray,
+        x: float,
+        y: float,
+        *,
+        rotation_radians: float = 0.0,
+        scale: float = 1.0,
+        opacity: float = 1.0,
+    ) -> np.ndarray:
+        """让素材的笔尖锚点对齐到画布坐标，并可围绕笔尖做轻微变换。"""
+        opacity = float(np.clip(opacity, 0.0, 1.0))
+        scale = max(0.01, float(scale))
+        if opacity <= 0.0:
+            return canvas
+
+        hand = self.hand
+        mask = self.mask
+        tip_px = self.tip_px
+        tip_py = self.tip_py
+        if abs(rotation_radians) > 1e-6 or abs(scale - 1.0) > 1e-6:
+            cosine = math.cos(rotation_radians) * scale
+            sine = math.sin(rotation_radians) * scale
+            corners = np.array(
+                [[0.0, 0.0], [self.w, 0.0], [0.0, self.h], [self.w, self.h]],
+                dtype=np.float64,
+            )
+            relative = corners - np.array([tip_px, tip_py], dtype=np.float64)
+            transformed = relative @ np.array([[cosine, sine], [-sine, cosine]])
+            min_x, min_y = np.floor(transformed.min(axis=0)).astype(int)
+            max_x, max_y = np.ceil(transformed.max(axis=0)).astype(int)
+            output_w = max(1, int(max_x - min_x))
+            output_h = max(1, int(max_y - min_y))
+            matrix = np.array(
+                [
+                    [cosine, -sine, -cosine * tip_px + sine * tip_py - min_x],
+                    [sine, cosine, -sine * tip_px - cosine * tip_py - min_y],
+                ],
+                dtype=np.float64,
+            )
+            hand = cv2.warpAffine(
+                self.hand,
+                matrix,
+                (output_w, output_h),
+                flags=cv2.INTER_LINEAR,
+                borderMode=cv2.BORDER_CONSTANT,
+            )
+            mask = cv2.warpAffine(
+                self.mask,
+                matrix,
+                (output_w, output_h),
+                flags=cv2.INTER_LINEAR,
+                borderMode=cv2.BORDER_CONSTANT,
+            )
+            tip_px = -min_x
+            tip_py = -min_y
+
+        mask = np.clip(mask * opacity, 0.0, 1.0)
+        mask_inv = 1.0 - mask
+        overlay_h, overlay_w = hand.shape[:2]
         # 素材左上角 = 落墨点 - 笔尖偏移
-        anchor_x = x - self.tip_px
-        anchor_y = y - self.tip_py
+        anchor_x = int(round(x - tip_px))
+        anchor_y = int(round(y - tip_py))
         h_canvas, w_canvas = canvas.shape[:2]
 
         x0 = max(0, anchor_x)
         y0 = max(0, anchor_y)
-        x1 = min(w_canvas, anchor_x + self.w)
-        y1 = min(h_canvas, anchor_y + self.h)
+        x1 = min(w_canvas, anchor_x + overlay_w)
+        y1 = min(h_canvas, anchor_y + overlay_h)
         if x1 <= x0 or y1 <= y0:
             return canvas
 
@@ -699,9 +760,9 @@ class TipOverlay:
         sy1 = sy0 + (y1 - y0)
 
         region = canvas[y0:y1, x0:x1]
-        hand_region = self.hand[sy0:sy1, sx0:sx1]
-        mask_region = self.mask[sy0:sy1, sx0:sx1]
-        inv_region = self.mask_inv[sy0:sy1, sx0:sx1]
+        hand_region = hand[sy0:sy1, sx0:sx1]
+        mask_region = mask[sy0:sy1, sx0:sx1]
+        inv_region = mask_inv[sy0:sy1, sx0:sx1]
 
         for c in range(3):
             region[:, :, c] = (

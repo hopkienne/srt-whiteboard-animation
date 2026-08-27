@@ -21,7 +21,13 @@ description: 将 SRT 字幕做成暖米黄纸张底的白板手绘动画：读�
 | 时长来源 | 每张图的 `sceneDurationMs` 来自该幕字幕的时间跨度（建议 25–35 秒/幕）。 |
 | 编辑框 | 预览台默认显示全部编号编辑框；编辑框不属于动画画面内容。 |
 
-## 统一出图视觉规范（强制）
+## 独立模式：文档手写标注动画
+
+当用户要求制作“论文/报告上用手圈选、下划线、画箭头、写批注”的视频时，使用 `scripts/render_document_annotation.py`，不要套用白板模式的空画布与无文字限制。该模式把原始文档作为首帧即完整可见的持久背景，只动画显式定义的 annotation layer；支持多页、竖屏画布、镜头 keyframe、手部覆盖和音频合成。完整格式见 `docs/document-annotation.md`。
+
+文档模式与下方白板工作流相互独立：下方“统一出图视觉规范”和逐步确认关卡只约束 SRT 白板模式；文档模式可保留印刷文字、表格和页面截图。
+
+## 统一出图视觉规范（仅白板模式，强制）
 
 所有场景的源图必须遵循同一套视觉语言；生成前把以下要求完整写入出图提示词，生成后逐条检查：
 
@@ -138,6 +144,15 @@ assets/whiteboard/<项目名>/
    ```bash
    <ENV_PY> scripts/merge_scenes.py --inputs 幕1.mp4 幕2.mp4 幕3.mp4 --output final.mp4
    ```
+
+### 文档标注模式
+
+```bash
+python scripts/create_document_annotation_demo.py
+<ENV_PY> scripts/render_document_annotation.py <project.json> <输出.mp4> [--audio 旁白.wav] [--hand 手部.png]
+```
+
+首次制作先执行 `--validate-only`。项目 JSON 中可用 `path`、`underline`、`ellipse`、`arrow`、`text`、`image`，并在每个 scene 中配置 `cameraKeyframes`。该模式直接在一个项目内完成多页输出，不需要再运行 `merge_scenes.py`。
 
 ## 质量检查
 

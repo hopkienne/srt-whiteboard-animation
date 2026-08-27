@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: srt-whiteboard-animation
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: DATA_ROOT
+        value: /tmp/whiteboard/jobs
+      - key: RENDER_WORKERS
+        value: 1

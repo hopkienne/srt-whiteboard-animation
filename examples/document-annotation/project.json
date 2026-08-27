@@ -1,0 +1,219 @@
+{
+  "version": 1,
+  "canvas": {
+    "width": 720,
+    "height": 1280,
+    "fps": 24
+  },
+  "typography": {
+    "fontFamily": "Times New Roman",
+    "fontStyle": "italic",
+    "fontSize": 28
+  },
+  "hand": {
+    "enabled": true,
+    "image": "../../assets/drawing-hand.png",
+    "height": 430,
+    "anchor": [
+      0.0,
+      0.0
+    ]
+  },
+  "scenes": [
+    {
+      "id": "research-summary",
+      "background": "page-01.png",
+      "backgroundFit": "cover",
+      "durationMs": 4500,
+      "cameraKeyframes": [
+        {
+          "atMs": 0,
+          "center": [
+            360,
+            640
+          ],
+          "zoom": 1.0
+        },
+        {
+          "atMs": 4500,
+          "center": [
+            365,
+            590
+          ],
+          "zoom": 1.06,
+          "easing": "easeInOut"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "circle-title",
+          "kind": "ellipse",
+          "rect": [
+            45,
+            144,
+            625,
+            132
+          ],
+          "color": "#D43F68",
+          "strokeWidth": 7,
+          "startMs": 300,
+          "durationMs": 900
+        },
+        {
+          "id": "underline-outcome",
+          "kind": "underline",
+          "points": [
+            [
+              58,
+              454
+            ],
+            [
+              190,
+              460
+            ],
+            [
+              335,
+              456
+            ],
+            [
+              492,
+              462
+            ],
+            [
+              632,
+              458
+            ]
+          ],
+          "color": "#D43F68",
+          "strokeWidth": 7,
+          "startMs": 1350,
+          "durationMs": 850
+        },
+        {
+          "id": "arrow-note",
+          "kind": "arrow",
+          "points": [
+            [
+              600,
+              345
+            ],
+            [
+              625,
+              320
+            ],
+            [
+              612,
+              280
+            ]
+          ],
+          "color": "#2E8B57",
+          "strokeWidth": 6,
+          "startMs": 2300,
+          "durationMs": 700
+        },
+        {
+          "id": "note",
+          "kind": "text",
+          "text": "Điểm chính của nghiên cứu",
+          "position": [
+            325,
+            265
+          ],
+          "fontSize": 25,
+          "color": "#2E8B57",
+          "startMs": 3100,
+          "durationMs": 900
+        }
+      ]
+    },
+    {
+      "id": "methods",
+      "background": "page-02.png",
+      "backgroundFit": "cover",
+      "durationMs": 4500,
+      "cameraKeyframes": [
+        {
+          "atMs": 0,
+          "center": [
+            360,
+            640
+          ],
+          "zoom": 1.0
+        },
+        {
+          "atMs": 4500,
+          "center": [
+            350,
+            710
+          ],
+          "zoom": 1.08,
+          "easing": "easeInOut"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "circle-sample",
+          "kind": "ellipse",
+          "rect": [
+            48,
+            232,
+            618,
+            108
+          ],
+          "color": "#D43F68",
+          "strokeWidth": 7,
+          "startMs": 250,
+          "durationMs": 950
+        },
+        {
+          "id": "sample-note",
+          "kind": "text",
+          "text": "62 người tham gia",
+          "position": [
+            78,
+            515
+          ],
+          "fontSize": 29,
+          "color": "#D43F68",
+          "startMs": 1400,
+          "durationMs": 850
+        },
+        {
+          "id": "schedule-arrow",
+          "kind": "arrow",
+          "points": [
+            [
+              230,
+              575
+            ],
+            [
+              315,
+              650
+            ],
+            [
+              360,
+              782
+            ]
+          ],
+          "color": "#E28A27",
+          "strokeWidth": 7,
+          "startMs": 2450,
+          "durationMs": 850
+        },
+        {
+          "id": "schedule-note",
+          "kind": "text",
+          "text": "Đánh giá theo 5 mốc thời gian",
+          "position": [
+            250,
+            565
+          ],
+          "fontSize": 24,
+          "color": "#E28A27",
+          "startMs": 3400,
+          "durationMs": 750
+        }
+      ]
+    }
+  ]
+}

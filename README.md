@@ -22,6 +22,77 @@
 - 支持浏览器预览台调整区域、顺序、时间和字幕关联
 - 支持逐幕渲染与多幕合并，输出完整 MP4
 
+## 新功能：文档手写标注动画
+
+仓库现在提供独立的 `render_document_annotation.py`，用于制作论文、报告或截图上的真人手写标注效果：原始文档从首帧保持可见，只让圈选、下划线、箭头、批注文字或透明 PNG 标注沿笔尖逐步出现。
+
+它支持：
+
+- 9:16 / 16:9 自定义偶数画布
+- `path`、`underline`、`ellipse`、`arrow`、`text` 与透明 `image` 标注
+- 多页硬切、zoom/pan 镜头关键帧、手部 PNG 跟随真实揭示前沿
+- H.264 输出，以及用 ffmpeg 自动合成并补齐/裁切旁白音频
+- 默认使用支持越南语的 Times New Roman，并可按项目或单条批注覆盖字体/字重/斜体
+
+快速体验：
+
+```bash
+python scripts/create_document_annotation_demo.py
+<ENV_PY> scripts/render_document_annotation.py \
+  examples/document-annotation/project.json \
+  examples/document-annotation/demo.mp4
+```
+
+完整项目格式、字段说明与制作流程见 [文档手写标注动画指南](docs/document-annotation.md)。
+
+## Web editor end-to-end
+
+Thư mục `web/` cung cấp trình biên tập tiếng Việt theo hướng trực quan: người dùng không nhập `position: [x, y]`, mà chọn công cụ rồi bấm, vẽ hoặc kéo trực tiếp trên tờ giấy. Tọa độ canvas được tự động chuyển sang project JSON 720 × 1280 của renderer.
+
+Luồng được hỗ trợ:
+
+- onboarding cho người dùng mới, có thể mở dự án mẫu hoặc tạo dự án riêng;
+- routing thật theo URL: `/` là onboarding, `/projects` là thư viện, `/projects/new` là wizard và `/studio/:projectId` là editor;
+- lưu dự án bằng IndexedDB, hỗ trợ mở lại từ thư viện hoặc reload trực tiếp URL studio mà không mất dữ liệu;
+- wizard 3 bước với vùng kéo-thả PDF/ảnh, tài nguyên SRT/audio tùy chọn và thiết lập tên/thời lượng;
+- tải PDF hoặc nhiều ảnh và tự tạo scene cho từng trang;
+- tải SRT, audio thuyết minh và ảnh overlay;
+- thêm/kéo `path`, `underline`, `ellipse`, `arrow`, `text`, `image` trực tiếp trên canvas;
+- phóng to/thu nhỏ canvas 50–300%, vừa màn hình, Ctrl/Cmd + cuộn và giữ Space để kéo tài liệu;
+- chỉnh đối tượng bằng inspector bên phải và toolbar ngữ cảnh ngay cạnh chú thích đang chọn;
+- nhập chữ tiếng Việt với Times New Roman, chọn dáng chữ, cỡ chữ, màu và thời điểm xuất hiện;
+- thay đổi thời lượng từng scene đến 3600 giây, thêm scene để tạo video dài;
+- xem thử animation, hoàn tác/làm lại, bật/tắt bàn tay;
+- tải project JSON hoặc gọi renderer local để nhận MP4.
+
+Khởi động toàn bộ frontend và renderer API bằng một lệnh:
+
+```bash
+cd web
+npm install
+npm run dev:full
+```
+
+Nếu chưa có `.venv`, hãy chạy `python scripts/prepare_env.py` ở thư mục gốc repo trước. `npm run dev:full` sẽ in URL của website; onboarding dẫn người dùng từ tài liệu đầu vào tới editor, còn nút **Tạo MP4** gửi project cùng assets vào renderer local và đổi thành **Tải MP4** khi hoàn tất.
+
+### Deploy miễn phí lên Render
+
+Repo có sẵn `Dockerfile` production và `render.yaml` để chạy frontend, Python API, FFmpeg và font hỗ trợ tiếng Việt trong cùng một Render Web Service.
+
+1. Fork hoặc push repo vào tài khoản GitHub của bạn.
+2. Trong Render Dashboard, chọn **New → Blueprint** và kết nối repo.
+3. Xác nhận service `srt-whiteboard-animation`; Render sẽ đọc `render.yaml`, build Docker image và kiểm tra `/api/health`.
+4. Mở URL `https://<service>.onrender.com` sau khi deploy thành công.
+
+Có thể kiểm tra image trước khi push:
+
+```bash
+docker build --platform linux/amd64 -t srt-whiteboard-animation:render .
+docker run --rm -p 10000:10000 srt-whiteboard-animation:render
+```
+
+Gói Free dùng filesystem tạm thời: dự án vẫn được giữ trong IndexedDB của trình duyệt, nhưng MP4 trên server có thể mất khi service ngủ, restart hoặc deploy lại. Vì vậy người dùng nên tải video ngay sau khi render hoàn tất. Khi nâng cấp lên gói có persistent disk, đổi `DATA_ROOT` sang mount path của disk.
+
 ## 工作方式
 
 该 Skill 的关键在于“字幕驱动、逐步确认”。每一步完成后都等待确认，避免在分镜、线稿或标注尚未定稿时浪费渲染成本：
@@ -149,6 +220,8 @@ srt-whiteboard-animation/
 │   ├── parse_srt.py                  # 字幕解析与分镜建议
 │   ├── render_annotation_preview.py  # 标注检查图
 │   ├── render_stream_whiteboard.py   # 流式笔迹 MP4 渲染器
+│   ├── render_document_annotation.py # 文档手写标注动画渲染器
+│   ├── create_document_annotation_demo.py # 生成可运行的双页示例
 │   ├── merge_scenes.py               # 多幕合并
 │   └── prepare_env.py                # 依赖环境准备
 └── agents/openai.yaml                # Codex 元数据

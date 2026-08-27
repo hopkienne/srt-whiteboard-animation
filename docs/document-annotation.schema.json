@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/geeklee/srt-whiteboard-animation/document-annotation.schema.json",
+  "title": "Document Annotation Animation Project",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "canvas", "scenes"],
+  "properties": {
+    "version": { "const": 1 },
+    "canvas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 2, "multipleOf": 2 },
+        "height": { "type": "integer", "minimum": 2, "multipleOf": 2 },
+        "fps": { "type": "integer", "minimum": 1, "maximum": 120, "default": 24 }
+      }
+    },
+    "audio": { "type": "string", "minLength": 1 },
+    "typography": { "$ref": "#/$defs/typography" },
+    "hand": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "image": { "type": "string", "minLength": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "anchor": { "$ref": "#/$defs/normalizedPoint" }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/scene" }
+    }
+  },
+  "$defs": {
+    "point": {
+      "type": "array",
+      "prefixItems": [{ "type": "number" }, { "type": "number" }],
+      "items": false
+    },
+    "normalizedPoint": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "number", "minimum": 0, "maximum": 1 },
+        { "type": "number", "minimum": 0, "maximum": 1 }
+      ],
+      "items": false
+    },
+    "points": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "$ref": "#/$defs/point" }
+    },
+    "easing": {
+      "enum": ["linear", "easeIn", "easeOut", "easeInOut"]
+    },
+    "typography": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fontFamily": { "type": "string", "minLength": 1 },
+        "fontStyle": { "enum": ["regular", "bold", "italic", "boldItalic"] },
+        "fontSize": { "type": "integer", "minimum": 1 },
+        "fontPath": { "type": "string", "minLength": 1 }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "required": ["kind", "startMs", "durationMs"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": { "type": "string" },
+        "startMs": { "type": "integer", "minimum": 0 },
+        "durationMs": { "type": "integer", "minimum": 1 },
+        "easing": { "$ref": "#/$defs/easing" }
+      }
+    },
+    "stroke": {
+      "type": "object",
+      "properties": {
+        "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "strokeWidth": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "pathAnnotation": {
+      "allOf": [
+        { "$ref": "#/$defs/timing" },
+        { "$ref": "#/$defs/stroke" },
+        {
+          "type": "object",
+          "required": ["points"],
+          "properties": {
+            "kind": { "enum": ["path", "underline"] },
+            "points": { "$ref": "#/$defs/points" }
+          }
+        }
+      ]
+    },
+    "ellipseAnnotation": {
+      "allOf": [
+        { "$ref": "#/$defs/timing" },
+        { "$ref": "#/$defs/stroke" },
+        {
+          "type": "object",
+          "required": ["rect"],
+          "properties": {
+            "kind": { "const": "ellipse" },
+            "rect": {
+              "type": "array",
+              "prefixItems": [
+                { "type": "number" },
+                { "type": "number" },
+                { "type": "number", "exclusiveMinimum": 0 },
+                { "type": "number", "exclusiveMinimum": 0 }
+              ],
+              "items": false
+            }
+          }
+        }
+      ]
+    },
+    "arrowAnnotation": {
+      "allOf": [
+        { "$ref": "#/$defs/timing" },
+        { "$ref": "#/$defs/stroke" },
+        {
+          "type": "object",
+          "required": ["points"],
+          "properties": {
+            "kind": { "const": "arrow" },
+            "points": { "$ref": "#/$defs/points" },
+            "headLength": { "type": "number", "exclusiveMinimum": 0 },
+            "headWidth": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        }
+      ]
+    },
+    "textAnnotation": {
+      "allOf": [
+        { "$ref": "#/$defs/timing" },
+        {
+          "type": "object",
+          "required": ["text", "position"],
+          "properties": {
+            "kind": { "const": "text" },
+            "text": { "type": "string", "minLength": 1 },
+            "position": { "$ref": "#/$defs/point" },
+            "fontSize": { "type": "integer", "minimum": 1 },
+            "fontPath": { "type": "string" },
+            "fontFamily": { "type": "string", "minLength": 1 },
+            "fontStyle": { "enum": ["regular", "bold", "italic", "boldItalic"] },
+            "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "opacity": { "type": "integer", "minimum": 0, "maximum": 255 }
+          }
+        }
+      ]
+    },
+    "imageAnnotation": {
+      "allOf": [
+        { "$ref": "#/$defs/timing" },
+        {
+          "type": "object",
+          "required": ["source"],
+          "properties": {
+            "kind": { "const": "image" },
+            "source": { "type": "string", "minLength": 1 },
+            "position": { "$ref": "#/$defs/point" },
+            "revealPath": { "$ref": "#/$defs/points" },
+            "brushWidth": { "type": "integer", "minimum": 1 }
+          }
+        }
+      ]
+    },
+    "annotation": {
+      "oneOf": [
+        { "$ref": "#/$defs/pathAnnotation" },
+        { "$ref": "#/$defs/ellipseAnnotation" },
+        { "$ref": "#/$defs/arrowAnnotation" },
+        { "$ref": "#/$defs/textAnnotation" },
+        { "$ref": "#/$defs/imageAnnotation" }
+      ]
+    },
+    "cameraKeyframe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["atMs"],
+      "properties": {
+        "atMs": { "type": "integer", "minimum": 0 },
+        "center": { "$ref": "#/$defs/point" },
+        "zoom": { "type": "number", "exclusiveMinimum": 0 },
+        "easing": { "$ref": "#/$defs/easing" }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["background", "durationMs"],
+      "properties": {
+        "id": { "type": "string" },
+        "background": { "type": "string", "minLength": 1 },
+        "backgroundFit": { "enum": ["cover", "contain", "stretch"] },
+        "durationMs": { "type": "integer", "minimum": 1 },
+        "cameraKeyframes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/cameraKeyframe" }
+        },
+        "annotations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/annotation" }
+        }
+      }
+    }
+  }
+}
