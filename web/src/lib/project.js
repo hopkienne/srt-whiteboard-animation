@@ -160,7 +160,7 @@ function cleanAnnotation(annotation, imageAssets) {
   return base;
 }
 
-export async function buildRendererPayload(scenes, audioAsset, handMode = "marker") {
+export async function buildRendererPayload(scenes, audioAsset, handMode = "marker", handSize = 100) {
   const assets = [];
   const imageAssets = [];
   const rendererScenes = [];
@@ -196,7 +196,7 @@ export async function buildRendererPayload(scenes, audioAsset, handMode = "marke
       canvas: { width: VIDEO_WIDTH, height: VIDEO_HEIGHT, fps: 24 },
       ...(audio ? { audio } : {}),
       typography: { fontFamily: "Times New Roman", fontStyle: "italic", fontSize: 36 },
-      hand: rendererHandConfig(handMode),
+      hand: rendererHandConfig(handMode, handSize),
       scenes: rendererScenes,
     },
     assets,

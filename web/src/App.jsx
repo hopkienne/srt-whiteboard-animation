@@ -67,6 +67,14 @@ import { adjustClipTiming } from "./lib/timeline";
 import { activeAnnotationAt, annotationPenPosition, easeProgress, partialPolyline, writingHandMotion } from "./lib/preview";
 import { buildSceneTimeline, locateSceneAt } from "./lib/project-timeline";
 import { removeScene } from "./lib/storyboard";
+import {
+  DEFAULT_HAND_SIZE,
+  HAND_SIZE_STEP,
+  MAX_HAND_SIZE,
+  MIN_HAND_SIZE,
+  normalizeHandSize,
+  previewHandHeight,
+} from "./lib/render-config";
 
 const TOOL_ITEMS = [
   { id: "select", label: "Chọn", Icon: SelectionIcon },
@@ -141,10 +149,10 @@ function opaqueImageBounds(image) {
   return { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight };
 }
 
-function drawPreviewHand(context, handAsset, point, handMode, motion) {
+function drawPreviewHand(context, handAsset, point, handMode, handSize, motion) {
   if (!handAsset || !point) return;
   const { image, crop } = handAsset;
-  const height = handMode === "pen" ? 420 : 470;
+  const height = previewHandHeight(handMode, handSize);
   const width = height * crop.width / crop.height;
   context.save();
   context.globalAlpha = motion.opacity;
@@ -241,7 +249,7 @@ function drawSelection(context, annotation) {
   context.restore();
 }
 
-function PaperCanvas({ scene, selectedId, tool, currentMs, previewing, handMode, onAdd, onSelect, onUpdate, onCommitText, onTransformStart, onTransformEnd, onToolDone, onDelete, onDuplicate, onCycleColor }) {
+function PaperCanvas({ scene, selectedId, tool, currentMs, previewing, handMode, handSize, onAdd, onSelect, onUpdate, onCommitText, onTransformStart, onTransformEnd, onToolDone, onDelete, onDuplicate, onCycleColor }) {
   const canvasRef = useRef(null);
   const scrollRef = useRef(null);
   const backgroundRef = useRef(null);
@@ -355,6 +363,7 @@ function PaperCanvas({ scene, selectedId, tool, currentMs, previewing, handMode,
             handAssetRef.current,
             annotationPenPosition(activeAnnotation, progress, textWidth),
             handMode,
+            handSize,
             writingHandMotion(activeAnnotation, progress, handMode),
           );
         }
@@ -364,7 +373,7 @@ function PaperCanvas({ scene, selectedId, tool, currentMs, previewing, handMode,
     draw();
     canvas.addEventListener("redraw", draw);
     return () => canvas.removeEventListener("redraw", draw);
-  }, [scene, selectedId, currentMs, previewing, handMode]);
+  }, [scene, selectedId, currentMs, previewing, handMode, handSize]);
 
   function canvasPoint(event) {
     const bounds = canvasRef.current.getBoundingClientRect();
@@ -892,6 +901,7 @@ export function StudioEditor({ project, onAutoSave, onNewProject, onHome, onProj
   const [renderJob, setRenderJob] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [handMode, setHandMode] = useState(project.handMode || "marker");
+  const [handSize, setHandSize] = useState(() => normalizeHandSize(project.handSize));
   const [saveState, setSaveState] = useState(onAutoSave ? "saved" : "demo");
   const renderPollTimerRef = useRef(null);
   const renderSourceVersionRef = useRef(0);
@@ -933,13 +943,14 @@ export function StudioEditor({ project, onAutoSave, onNewProject, onHome, onProj
         subtitleName,
         audioAsset,
         handMode,
+        handSize,
       })).then(() => setSaveState("saved")).catch((error) => {
         setSaveState("error");
         setNotice(`Không thể tự động lưu: ${error.message}`);
       });
     }, 700);
     return () => clearTimeout(timeout);
-  }, [audioAsset, documentName, handMode, onAutoSave, project, projectName, scenes, subtitleName, subtitles]);
+  }, [audioAsset, documentName, handMode, handSize, onAutoSave, project, projectName, scenes, subtitleName, subtitles]);
 
   useEffect(() => {
     setSelectedId((current) => current || scenes[0]?.annotations.find((annotation) => annotation.kind === "text")?.id || null);
@@ -954,7 +965,7 @@ export function StudioEditor({ project, onAutoSave, onNewProject, onHome, onProj
     setRenderJob(null);
     setBusy(false);
     setNotice("Dự án đã thay đổi. Hãy tạo MP4 mới để nhận đúng nội dung hiện tại.");
-  }, [audioAsset, handMode, scenes]);
+  }, [audioAsset, handMode, handSize, scenes]);
 
   useEffect(() => () => {
     if (renderPollTimerRef.current) window.clearTimeout(renderPollTimerRef.current);
@@ -1277,7 +1288,7 @@ export function StudioEditor({ project, onAutoSave, onNewProject, onHome, onProj
     setRenderJob(null);
     setNotice("Đang đóng gói project và tài nguyên…");
     try {
-      const payload = await buildRendererPayload(scenes, audioAsset, handMode);
+      const payload = await buildRendererPayload(scenes, audioAsset, handMode, handSize);
       if (activeRenderVersionRef.current !== sourceVersion || renderSourceVersionRef.current !== sourceVersion) return;
       const response = await fetch("/api/render", {
         method: "POST",
@@ -1307,7 +1318,7 @@ export function StudioEditor({ project, onAutoSave, onNewProject, onHome, onProj
   async function exportProject() {
     setBusy(true);
     try {
-      const payload = await buildRendererPayload(scenes, audioAsset, handMode);
+      const payload = await buildRendererPayload(scenes, audioAsset, handMode, handSize);
       downloadJson("whiteboard-project.json", payload.project);
       setNotice("Đã tải project JSON. Các vị trí được tạo tự động từ canvas.");
     } finally {
@@ -1378,6 +1389,42 @@ export function StudioEditor({ project, onAutoSave, onNewProject, onHome, onProj
                 </button>
               ))}
             </div>
+            <div className={`hand-size-control ${handMode === "none" ? "disabled" : ""}`}>
+              <div className="hand-size-heading">
+                <label htmlFor="hand-size">Kích thước tay &amp; bút</label>
+                <output htmlFor="hand-size">{handSize}%</output>
+              </div>
+              <div className="hand-size-slider-row">
+                <MinusIcon size={15} aria-hidden="true" />
+                <input
+                  id="hand-size"
+                  type="range"
+                  min={MIN_HAND_SIZE}
+                  max={MAX_HAND_SIZE}
+                  step={HAND_SIZE_STEP}
+                  value={handSize}
+                  disabled={handMode === "none"}
+                  aria-label="Kích thước bàn tay và cây bút"
+                  onChange={(event) => {
+                    const nextSize = normalizeHandSize(event.target.value);
+                    setHandSize(nextSize);
+                    setNotice(`Kích thước tay và bút: ${nextSize}%.`);
+                  }}
+                />
+                <PlusIcon size={15} aria-hidden="true" />
+              </div>
+              <button
+                type="button"
+                className="hand-size-reset"
+                disabled={handMode === "none" || handSize === DEFAULT_HAND_SIZE}
+                onClick={() => {
+                  setHandSize(DEFAULT_HAND_SIZE);
+                  setNotice("Đã đưa kích thước tay và bút về mặc định 100%.");
+                }}
+              >
+                Mặc định
+              </button>
+            </div>
           </div>
           <button className="project-settings"><GearSixIcon size={20} /> Cài đặt dự án</button>
         </aside>
@@ -1390,6 +1437,7 @@ export function StudioEditor({ project, onAutoSave, onNewProject, onHome, onProj
             currentMs={sceneCurrentMs}
             previewing={previewing}
             handMode={handMode}
+            handSize={handSize}
             onAdd={addAnnotation}
             onSelect={setSelectedId}
             onUpdate={updateAnnotationLive}

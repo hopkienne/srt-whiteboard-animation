@@ -62,7 +62,7 @@ Luồng được hỗ trợ:
 - chỉnh đối tượng bằng inspector bên phải và toolbar ngữ cảnh ngay cạnh chú thích đang chọn;
 - nhập chữ tiếng Việt với Times New Roman, chọn dáng chữ, cỡ chữ, màu và thời điểm xuất hiện;
 - thay đổi thời lượng từng scene đến 3600 giây, thêm scene để tạo video dài;
-- xem thử animation, hoàn tác/làm lại, bật/tắt bàn tay;
+- xem thử animation, hoàn tác/làm lại, bật/tắt và điều chỉnh kích thước tay cầm bút;
 - tải project JSON hoặc gọi renderer local để nhận MP4.
 
 Khởi động toàn bộ frontend và renderer API bằng một lệnh:

@@ -316,6 +316,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .hand-options button { height: 58px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 8px; background: #fffdf8; overflow: hidden; cursor: pointer; }
 .hand-options button.selected { border: 2px solid var(--red); }
 .hand-options img { width: 86px; height: 72px; object-fit: cover; object-position: 20% 30%; transform: rotate(-12deg); }
+.hand-size-control { margin-top: 9px; padding: 9px 10px 8px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,253,248,.82); transition: opacity .15s ease; }
+.hand-size-control.disabled { opacity: .48; }
+.hand-size-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #514b43; font-size: 10px; font-weight: 700; }
+.hand-size-heading output { min-width: 39px; color: var(--red); text-align: right; font-size: 11px; font-variant-numeric: tabular-nums; }
+.hand-size-slider-row { display: grid; grid-template-columns: 15px minmax(0, 1fr) 15px; align-items: center; gap: 6px; margin-top: 6px; color: #7c7469; }
+.hand-size-slider-row input { width: 100%; margin: 0; accent-color: var(--red); cursor: pointer; }
+.hand-size-slider-row input:disabled { cursor: default; }
+.hand-size-reset { display: block; margin: 4px 0 0 auto; padding: 2px 0; color: var(--muted); background: transparent; border: 0; font-size: 9px; cursor: pointer; }
+.hand-size-reset:not(:disabled):hover { color: var(--red); text-decoration: underline; }
+.hand-size-reset:disabled { opacity: .5; cursor: default; }
 .project-settings { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; margin-top: 10px; border: 1px solid var(--line-strong); border-radius: 8px; background: #fffdf8; cursor: pointer; font-weight: 600; font-size: 12px; }
 
 .canvas-workspace { position: relative; min-height: 0; overflow: hidden; background-color: #eee8de; }

@@ -1,4 +1,5 @@
 import { createInitialScenes, makeId } from "../../lib/project";
+import { DEFAULT_HAND_SIZE } from "../../lib/render-config";
 
 export const DEMO_PROJECT_ID = "demo";
 
@@ -13,6 +14,7 @@ export function createProjectRecord(input) {
     subtitleName: input.subtitleName,
     audioAsset: input.audioAsset,
     handMode: "marker",
+    handSize: DEFAULT_HAND_SIZE,
     createdAt: now,
     updatedAt: now,
   };
@@ -29,6 +31,7 @@ export function createDemoProject() {
     subtitleName: "",
     audioAsset: null,
     handMode: "marker",
+    handSize: DEFAULT_HAND_SIZE,
     createdAt: now,
     updatedAt: now,
   };
