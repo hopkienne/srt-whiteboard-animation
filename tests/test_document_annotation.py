@@ -17,6 +17,7 @@ from render_document_annotation import (  # noqa: E402
     ProjectError,
     _camera_at,
     _find_font,
+    _ellipse_points,
     _partial_polyline,
     _writing_hand_motion,
     _writing_hand_offset,
@@ -24,6 +25,13 @@ from render_document_annotation import (  # noqa: E402
 
 
 class GeometryTests(unittest.TestCase):
+    def test_ellipse_axes_are_horizontal_and_vertical(self) -> None:
+        points = _ellipse_points([100, 200, 300, 120], samples=401)
+        self.assertAlmostEqual(points[24][0], 400)
+        self.assertAlmostEqual(points[24][1], 260)
+        self.assertAlmostEqual(points[124][0], 250)
+        self.assertAlmostEqual(points[124][1], 320)
+
     def test_partial_polyline_uses_distance_not_point_count(self) -> None:
         result = _partial_polyline([(0, 0), (100, 0), (100, 10)], 0.5)
         self.assertEqual(result[-1], (55, 0))

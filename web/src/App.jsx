@@ -64,7 +64,7 @@ import {
   SELECTION_PADDING,
 } from "./lib/resize";
 import { adjustClipTiming } from "./lib/timeline";
-import { activeAnnotationAt, annotationPenPosition, easeProgress, partialPolyline, writingHandMotion } from "./lib/preview";
+import { activeAnnotationAt, annotationPenPosition, easeProgress, ELLIPSE_ROTATION, ELLIPSE_START_ANGLE, partialPolyline, writingHandMotion } from "./lib/preview";
 import { buildSceneTimeline, locateSceneAt } from "./lib/project-timeline";
 import { removeScene } from "./lib/storyboard";
 import {
@@ -182,7 +182,7 @@ function drawAnnotation(context, annotation, progress, imageCache) {
   } else if (annotation.kind === "ellipse") {
     const [x, y, width, height] = annotation.rect;
     context.beginPath();
-    context.ellipse(x + width / 2, y + height / 2, width / 2, height / 2, -0.08, -Math.PI * 0.1, -Math.PI * 0.1 + Math.PI * 2 * progress);
+    context.ellipse(x + width / 2, y + height / 2, width / 2, height / 2, ELLIPSE_ROTATION, ELLIPSE_START_ANGLE, ELLIPSE_START_ANGLE + Math.PI * 2 * progress);
     context.stroke();
   } else if (annotation.kind === "arrow") {
     const points = partialPolyline(annotation.points, Math.min(1, progress / 0.82));

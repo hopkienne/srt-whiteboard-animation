@@ -2,6 +2,9 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+export const ELLIPSE_ROTATION = 0;
+export const ELLIPSE_START_ANGLE = -Math.PI * 0.12;
+
 export function easeProgress(value, mode = "easeInOut") {
   const progress = clamp(value, 0, 1);
   if (mode === "linear") return progress;
@@ -56,13 +59,12 @@ export function annotationPenPosition(annotation, progress, textWidth = 0) {
   }
   if (annotation.kind === "ellipse") {
     const [x, y, width, height] = annotation.rect;
-    const rotation = -0.08;
-    const angle = -Math.PI * 0.1 + Math.PI * 2 * safeProgress;
+    const angle = ELLIPSE_START_ANGLE + Math.PI * 2 * safeProgress;
     const localX = width / 2 * Math.cos(angle);
     const localY = height / 2 * Math.sin(angle);
     return [
-      x + width / 2 + localX * Math.cos(rotation) - localY * Math.sin(rotation),
-      y + height / 2 + localX * Math.sin(rotation) + localY * Math.cos(rotation),
+      x + width / 2 + localX,
+      y + height / 2 + localY,
     ];
   }
   if (annotation.kind === "text") {

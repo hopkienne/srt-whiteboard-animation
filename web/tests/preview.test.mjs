@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { activeAnnotationAt, annotationPenPosition, easeProgress, partialPolyline, writingHandMotion } from "../src/lib/preview.js";
+import { activeAnnotationAt, annotationPenPosition, easeProgress, ELLIPSE_ROTATION, partialPolyline, writingHandMotion } from "../src/lib/preview.js";
 
 test("reveals a two-point stroke continuously", () => {
   assert.deepEqual(partialPolyline([[0, 0], [100, 0]], 0.25), [[0, 0], [25, 0]]);
@@ -20,6 +20,13 @@ test("uses the same easing curve as the MP4 renderer", () => {
 test("places the pen at the visible end of text and arrows", () => {
   assert.deepEqual(annotationPenPosition({ kind: "text", position: [20, 40], fontSize: 50 }, 0.5, 200), [120, 76]);
   assert.deepEqual(annotationPenPosition({ kind: "arrow", points: [[10, 10], [110, 10]] }, 0.41), [60, 10]);
+});
+
+test("keeps ellipse axes horizontal and vertical", () => {
+  const ellipse = { kind: "ellipse", rect: [100, 200, 300, 120] };
+  assert.equal(ELLIPSE_ROTATION, 0);
+  assert.deepEqual(annotationPenPosition(ellipse, 0.06), [400, 260]);
+  assert.deepEqual(annotationPenPosition(ellipse, 0.31), [250, 320]);
 });
 
 test("chooses the latest active annotation and hides the hand between clips", () => {
