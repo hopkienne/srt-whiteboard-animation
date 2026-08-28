@@ -372,8 +372,9 @@ class DocumentAnnotationRenderer:
         try:
             if not all(0.0 <= float(value) <= 1.0 for value in anchor):
                 raise ProjectError("hand.anchor 必须在 0..1")
-            if int(hand.get("height", max(1, round(self.height * 0.38)))) <= 0:
-                raise ProjectError("hand.height 必须大于 0")
+            hand_height = int(hand.get("height", max(1, round(self.height * 0.38))))
+            if hand_height < 0 or (hand.get("enabled", True) is not False and hand_height == 0):
+                raise ProjectError("hand.height 必须为非负数，启用手部素材时必须大于 0")
         except (TypeError, ValueError) as exc:
             raise ProjectError("hand.anchor/height 数值无效") from exc
         typography = self.project.get("typography", {})

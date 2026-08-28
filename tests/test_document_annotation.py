@@ -153,6 +153,15 @@ class RendererTests(unittest.TestCase):
         with self.assertRaises(ProjectError):
             DocumentAnnotationRenderer(project, path)
 
+    def test_zero_height_is_valid_only_when_hand_overlay_is_disabled(self) -> None:
+        project, path = self._project([])
+        project["hand"] = {"enabled": False, "height": 0}
+        DocumentAnnotationRenderer(project, path)
+
+        project["hand"] = {"enabled": True, "height": 0}
+        with self.assertRaises(ProjectError):
+            DocumentAnnotationRenderer(project, path)
+
     def test_validate_only_loads_annotation_image_assets(self) -> None:
         project, path = self._project(
             [

@@ -1,6 +1,6 @@
 export const DEFAULT_HAND_SIZE = 100;
-export const MIN_HAND_SIZE = 60;
-export const MAX_HAND_SIZE = 160;
+export const MIN_HAND_SIZE = 0;
+export const MAX_HAND_SIZE = 150;
 export const HAND_SIZE_STEP = 5;
 
 export function normalizeHandSize(handSize = DEFAULT_HAND_SIZE) {
@@ -12,16 +12,17 @@ export function normalizeHandSize(handSize = DEFAULT_HAND_SIZE) {
 
 export function previewHandHeight(handMode = "marker", handSize = DEFAULT_HAND_SIZE) {
   const normalizedMode = handMode === true ? "marker" : handMode === false ? "none" : handMode;
-  const baseHeight = normalizedMode === "pen" ? 420 : 470;
+  const baseHeight = normalizedMode === "pen" ? 270 : 300;
   return Math.round(baseHeight * normalizeHandSize(handSize) / 100);
 }
 
 export function rendererHandConfig(handMode = "marker", handSize = DEFAULT_HAND_SIZE) {
   const normalizedMode = handMode === true ? "marker" : handMode === false ? "none" : handMode;
+  const height = previewHandHeight(normalizedMode, handSize);
   return {
-    enabled: normalizedMode !== "none",
+    enabled: normalizedMode !== "none" && height > 0,
     style: normalizedMode,
-    height: previewHandHeight(normalizedMode, handSize),
+    height,
     anchor: [0, 0],
   };
 }

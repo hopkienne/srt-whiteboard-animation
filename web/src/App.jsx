@@ -153,6 +153,7 @@ function drawPreviewHand(context, handAsset, point, handMode, handSize, motion) 
   if (!handAsset || !point) return;
   const { image, crop } = handAsset;
   const height = previewHandHeight(handMode, handSize);
+  if (height <= 0) return;
   const width = height * crop.width / crop.height;
   context.save();
   context.globalAlpha = motion.opacity;
