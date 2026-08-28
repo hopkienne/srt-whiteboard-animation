@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Patrick Hand";
+  src: url("/assets/fonts/PatrickHand-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   font-family: "Segoe UI", Inter, Arial, sans-serif;
   color: #282621;
@@ -392,6 +400,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .annotation-inspector select, .annotation-inspector input { width: 100%; height: 34px; padding: 0 8px; color: var(--ink); background: #fffdf8; border: 1px solid #d1c6b7; border-radius: 6px; font-size: 10px; }
 .inspector-style-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-top: 6px; }
 .inspector-style-row button { min-height: 29px; color: #5c564e; background: #fffdf8; border: 1px solid #d7cdbf; border-radius: 6px; cursor: pointer; font-size: 8px; }
+.inspector-style-row button:disabled { opacity: .42; cursor: not-allowed; }
 .inspector-style-row button.active { color: var(--red); background: #f9e6e1; border-color: #d98c8b; font-weight: 800; }
 .inspector-color-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
 .inspector-color-row button { width: 24px; height: 24px; padding: 0; border: 2px solid #fffdf8; border-radius: 6px; box-shadow: 0 0 0 1px rgba(60,52,43,.18); cursor: pointer; }

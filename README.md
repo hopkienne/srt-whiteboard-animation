@@ -32,7 +32,7 @@
 - `path`、`underline`、`ellipse`、`arrow`、`text` 与透明 `image` 标注
 - 多页硬切、zoom/pan 镜头关键帧、手部 PNG 跟随真实揭示前沿
 - H.264 输出，以及用 ffmpeg 自动合成并补齐/裁切旁白音频
-- 默认使用支持越南语的 Times New Roman，并可按项目或单条批注覆盖字体/字重/斜体
+- 内置支持越南语的 Times New Roman 与 Patrick Hand，并可按项目或单条批注选择字体
 
 快速体验：
 
@@ -60,7 +60,7 @@ Luồng được hỗ trợ:
 - thêm/kéo `path`, `underline`, `ellipse`, `arrow`, `text`, `image` trực tiếp trên canvas;
 - phóng to/thu nhỏ canvas 50–300%, vừa màn hình, Ctrl/Cmd + cuộn và giữ Space để kéo tài liệu;
 - chỉnh đối tượng bằng inspector bên phải và toolbar ngữ cảnh ngay cạnh chú thích đang chọn;
-- nhập chữ tiếng Việt với Times New Roman, chọn dáng chữ, cỡ chữ, màu và thời điểm xuất hiện;
+- nhập chữ tiếng Việt với Times New Roman hoặc Patrick Hand, chọn dáng chữ, cỡ chữ, màu và thời điểm xuất hiện;
 - thay đổi thời lượng từng scene đến 3600 giây, thêm scene để tạo video dài;
 - xem thử animation, hoàn tác/làm lại, bật/tắt và điều chỉnh kích thước tay cầm bút;
 - tải project JSON hoặc gọi renderer local để nhận MP4.

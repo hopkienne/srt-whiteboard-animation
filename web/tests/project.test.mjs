@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { normalizeHandSize, previewHandHeight, rendererHandConfig } from "../src/lib/render-config.js";
+import { normalizeFontStyle, supportsFontStyles } from "../src/lib/fonts.js";
 
 test("matches exported hand geometry to each preview mode", () => {
   assert.deepEqual(rendererHandConfig("marker"), { enabled: true, style: "marker", height: 300, anchor: [0, 0] });
@@ -27,4 +28,10 @@ test("normalizes persisted hand sizes to the supported slider range", () => {
 test("treats zero percent as a disabled hand overlay in preview and export", () => {
   assert.equal(previewHandHeight("marker", 0), 0);
   assert.deepEqual(rendererHandConfig("marker", 0), { enabled: false, style: "marker", height: 0, anchor: [0, 0] });
+});
+
+test("keeps Patrick Hand regular so preview and MP4 use the same bundled face", () => {
+  assert.equal(supportsFontStyles("Patrick Hand"), false);
+  assert.equal(normalizeFontStyle("Patrick Hand", "boldItalic"), "regular");
+  assert.equal(normalizeFontStyle("Times New Roman", "boldItalic"), "boldItalic");
 });

@@ -165,7 +165,7 @@ class WhiteboardHandler(SimpleHTTPRequestHandler):
             self._json(
                 {
                     "annotationKinds": ["path", "underline", "ellipse", "arrow", "text", "image"],
-                    "fontFamilies": ["Times New Roman", "serif"],
+                    "fontFamilies": ["Times New Roman", "Patrick Hand", "serif"],
                     "canvasPresets": [{"label": "Dọc 9:16", "width": 720, "height": 1280, "fps": 24}],
                 }
             )

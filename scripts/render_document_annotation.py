@@ -31,6 +31,7 @@ sys.path.insert(0, str(_SCRIPT_DIR))
 import stream_render as sr  # noqa: E402
 
 DEFAULT_HAND = _SCRIPT_DIR.parent / "assets" / "drawing-hand.png"
+PATRICK_HAND_FONT = _SCRIPT_DIR.parent / "assets" / "fonts" / "PatrickHand-Regular.ttf"
 SUPPORTED_KINDS = {"path", "underline", "ellipse", "arrow", "text", "image"}
 
 
@@ -166,6 +167,11 @@ def _ellipse_points(rect: Sequence[float], samples: int = 128) -> list[tuple[flo
 
 def _font_candidates(family: str, style: str) -> list[Path]:
     normalized_family = "".join(character for character in family.lower() if character.isalnum())
+    style_key = style.lower().replace("-", "").replace("_", "")
+    if normalized_family == "patrickhand":
+        if style_key != "regular":
+            raise ProjectError("Patrick Hand 仅提供 regular 字形")
+        return [PATRICK_HAND_FONT]
     times_aliases = {
         "timesnewroman",
         "timesroman",
@@ -175,9 +181,8 @@ def _font_candidates(family: str, style: str) -> list[Path]:
     }
     if normalized_family not in times_aliases:
         raise ProjectError(
-            f"当前 fontFamily 仅内置 Times New Roman/serif；其他字体请使用 fontPath: {family}"
+            f"当前 fontFamily 仅内置 Times New Roman/Patrick Hand/serif；其他字体请使用 fontPath: {family}"
         )
-    style_key = style.lower().replace("-", "").replace("_", "")
     styles = {
         "regular": ("times.ttf", "LiberationSerif-Regular.ttf", "DejaVuSerif.ttf", "Times New Roman.ttf"),
         "bold": ("timesbd.ttf", "LiberationSerif-Bold.ttf", "DejaVuSerif-Bold.ttf", "Times New Roman Bold.ttf"),
@@ -217,10 +222,7 @@ def _find_font(
                 raise ProjectError(f"无法加载字体: {candidate}") from exc
     if font_path:
         raise ProjectError(f"字体文件不存在: {font_path}")
-    raise ProjectError(
-        "未找到支持越南语的 Times New Roman 兼容字体；"
-        "请安装 Times New Roman/Liberation Serif/DejaVu Serif，或配置 fontPath"
-    )
+    raise ProjectError("未找到可用字体；请检查内置字体文件、安装 Times New Roman 兼容字体，或配置 fontPath")
 
 
 def _fit_background(image: np.ndarray, width: int, height: int, fit: str) -> np.ndarray:

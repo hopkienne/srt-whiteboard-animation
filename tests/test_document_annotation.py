@@ -62,6 +62,12 @@ class GeometryTests(unittest.TestCase):
         self.assertIsNotNone(font.getmask(text).getbbox())
         self.assertGreater(font.getlength(text), 100)
 
+    def test_patrick_hand_bundled_font_renders_vietnamese(self) -> None:
+        font = _find_font(None, 28, "Patrick Hand", "regular")
+        text = "Tiếng Việt: người tham gia, đánh giá, nghiên cứu"
+        self.assertIsNotNone(font.getmask(text).getbbox())
+        self.assertGreater(font.getlength(text), 100)
+
 
 class RendererTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -195,6 +201,27 @@ class RendererTests(unittest.TestCase):
             "fontStyle": "italic",
         }
         path.write_text(json.dumps(project, ensure_ascii=False), encoding="utf-8")
+        renderer = DocumentAnnotationRenderer(project, path)
+        final = renderer.render_scene_frame(0, 700, show_hand=False)
+        red_pixels = (final[:, :, 2] > 140) & (final[:, :, 1] < 120)
+        self.assertGreater(int(red_pixels.sum()), 20)
+
+    def test_patrick_hand_annotation_renders_in_a_video_frame(self) -> None:
+        project, path = self._project(
+            [
+                {
+                    "kind": "text",
+                    "text": "Tiếng Việt viết tay",
+                    "position": [4, 35],
+                    "fontFamily": "Patrick Hand",
+                    "fontStyle": "regular",
+                    "fontSize": 18,
+                    "color": "#CC2244",
+                    "startMs": 0,
+                    "durationMs": 700,
+                }
+            ]
+        )
         renderer = DocumentAnnotationRenderer(project, path)
         final = renderer.render_scene_frame(0, 700, show_hand=False)
         red_pixels = (final[:, :, 2] > 140) & (final[:, :, 1] < 120)

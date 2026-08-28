@@ -1,5 +1,6 @@
 import { urlToDataUrl, VIDEO_HEIGHT, VIDEO_WIDTH } from "./media";
 import { rendererHandConfig } from "./render-config";
+import { normalizeFontStyle } from "./fonts";
 
 export const DEFAULT_TEXT = "Đối chứng: viêm niêm mạc";
 export const DEFAULT_COLORS = ["#d72f45", "#d95f8d", "#e78418", "#2f925b", "#2e72d2", "#25282c"];
@@ -92,7 +93,9 @@ export function annotationBounds(annotation, context) {
   }
   if (annotation.kind === "text") {
     context.save();
-    context.font = `${annotation.fontStyle === "italic" ? "italic " : ""}${annotation.fontStyle?.includes("bold") ? "bold " : ""}${annotation.fontSize || 36}px ${annotation.fontFamily || "Times New Roman"}`;
+    const fontStyle = normalizeFontStyle(annotation.fontFamily, annotation.fontStyle || "italic");
+    const normalizedStyle = fontStyle.toLowerCase();
+    context.font = `${normalizedStyle.includes("italic") ? "italic " : ""}${normalizedStyle.includes("bold") ? "bold " : ""}${annotation.fontSize || 36}px "${annotation.fontFamily || "Times New Roman"}", serif`;
     const width = Math.max(70, context.measureText(annotation.text || DEFAULT_TEXT).width);
     context.restore();
     return { x: annotation.position[0], y: annotation.position[1], width, height: (annotation.fontSize || 36) * 1.25 };
@@ -147,7 +150,7 @@ function cleanAnnotation(annotation, imageAssets) {
       position: annotation.position,
       color: annotation.color,
       fontFamily: annotation.fontFamily || "Times New Roman",
-      fontStyle: annotation.fontStyle || "italic",
+      fontStyle: normalizeFontStyle(annotation.fontFamily, annotation.fontStyle || "italic"),
       fontSize: Number(annotation.fontSize) || 36,
       opacity: 255,
     };

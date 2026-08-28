@@ -75,6 +75,7 @@ import {
   normalizeHandSize,
   previewHandHeight,
 } from "./lib/render-config";
+import { FONT_FAMILIES, normalizeFontStyle, supportsFontStyles } from "./lib/fonts";
 
 const TOOL_ITEMS = [
   { id: "select", label: "Chọn", Icon: SelectionIcon },
@@ -115,7 +116,7 @@ function annotationProgress(annotation, currentMs, previewing) {
 }
 
 function annotationFont(annotation) {
-  const style = annotation.fontStyle || "italic";
+  const style = normalizeFontStyle(annotation.fontFamily, annotation.fontStyle || "italic");
   const weight = style.toLowerCase().includes("bold") ? "700 " : "";
   const italic = style.toLowerCase().includes("italic") ? "italic " : "";
   return `${italic}${weight}${annotation.fontSize || 36}px "${annotation.fontFamily || "Times New Roman"}", serif`;
@@ -595,8 +596,8 @@ function PaperCanvas({ scene, selectedId, tool, currentMs, previewing, handMode,
                   color: inlineAnnotation.color,
                   fontFamily: `"${inlineAnnotation.fontFamily || "Times New Roman"}", serif`,
                   fontSize: `${Math.max(10, (inlineAnnotation.fontSize || 36) * inlineScale)}px`,
-                  fontStyle: inlineAnnotation.fontStyle?.toLowerCase().includes("italic") ? "italic" : "normal",
-                  fontWeight: inlineAnnotation.fontStyle?.toLowerCase().includes("bold") ? "700" : "400",
+                  fontStyle: normalizeFontStyle(inlineAnnotation.fontFamily, inlineAnnotation.fontStyle).toLowerCase().includes("italic") ? "italic" : "normal",
+                  fontWeight: normalizeFontStyle(inlineAnnotation.fontFamily, inlineAnnotation.fontStyle).toLowerCase().includes("bold") ? "700" : "400",
                 }}
                 onChange={(event) => setInlineText((current) => ({ ...current, draft: event.target.value.replace(/[\r\n]/g, " ") }))}
                 onBlur={commitInlineText}
@@ -802,6 +803,7 @@ function AnnotationInspector({ selectedAnnotation, tool, onPatch, onDelete, onDu
   const contextTool = TOOL_ITEMS.find((item) => item.id === (selectedAnnotation?.kind || tool)) || TOOL_ITEMS[0];
   const ContextIcon = contextTool.Icon;
   const isCreating = !selectedAnnotation && tool !== "select";
+  const selectedFontSupportsStyles = supportsFontStyles(selectedAnnotation?.fontFamily);
 
   return (
     <aside className="annotation-inspector">
@@ -835,11 +837,20 @@ function AnnotationInspector({ selectedAnnotation, tool, onPatch, onDelete, onDu
             <section className="inspector-section">
               <label className="inspector-label">Kiểu chữ</label>
               <div className="inspector-font-row">
-                <select aria-label="Kiểu chữ" value={selectedAnnotation.fontFamily} onChange={(event) => onPatch({ fontFamily: event.target.value })}><option>Times New Roman</option><option>serif</option></select>
+                <select
+                  aria-label="Kiểu chữ"
+                  value={selectedAnnotation.fontFamily}
+                  onChange={(event) => {
+                    const fontFamily = event.target.value;
+                    onPatch({ fontFamily, fontStyle: normalizeFontStyle(fontFamily, selectedAnnotation.fontStyle) });
+                  }}
+                >
+                  {FONT_FAMILIES.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
+                </select>
                 <input aria-label="Cỡ chữ" type="number" min="12" max="96" value={selectedAnnotation.fontSize} onChange={(event) => onPatch({ fontSize: Number(event.target.value) })} />
               </div>
               <div className="inspector-style-row">
-                {[['regular', 'Thường'], ['bold', 'Đậm'], ['italic', 'Nghiêng'], ['boldItalic', 'Đậm nghiêng']].map(([value, label]) => <button key={value} className={(selectedAnnotation.fontStyle || "italic") === value ? "active" : ""} type="button" onClick={() => onPatch({ fontStyle: value })}>{label}</button>)}
+                {[['regular', 'Thường'], ['bold', 'Đậm'], ['italic', 'Nghiêng'], ['boldItalic', 'Đậm nghiêng']].map(([value, label]) => <button key={value} className={normalizeFontStyle(selectedAnnotation.fontFamily, selectedAnnotation.fontStyle || "italic") === value ? "active" : ""} type="button" disabled={!selectedFontSupportsStyles && value !== "regular"} title={!selectedFontSupportsStyles && value !== "regular" ? "Patrick Hand chỉ có dáng chữ thường" : undefined} onClick={() => onPatch({ fontStyle: value })}>{label}</button>)}
               </div>
             </section>
           )}

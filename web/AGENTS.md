@@ -13,6 +13,7 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - The user selected visual option 3: a warm editorial storyboard workspace.
 - Preserve the top scene cards, direct-on-paper annotation canvas, floating tool palette, and scene timeline.
 - Vietnamese UI and Times New Roman-safe annotation text are product requirements.
+- Patrick Hand is a bundled, offline-safe annotation font with Vietnamese glyph coverage. Because the family ships only a regular face, selecting it normalizes the text style to regular so browser preview and MP4 export remain consistent.
 - Users must never be asked to type X/Y coordinates; positions come from direct manipulation on the canvas.
 - The website must include a real first-run onboarding screen and a guided new-project flow before the editor.
 - PDF and image upload must always have a visible button and drag-and-drop zone; never hide the primary document picker only behind media cards.

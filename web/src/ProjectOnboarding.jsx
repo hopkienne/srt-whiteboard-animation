@@ -181,7 +181,7 @@ export function ProjectOnboarding({ startAt = "welcome", onStartProject, onUseSa
           </div>
         </section>
 
-        <footer className="welcome-footer"><span>Dự án được lưu trong trình duyệt của bạn</span><span>Hỗ trợ tiếng Việt & Times New Roman</span></footer>
+        <footer className="welcome-footer"><span>Dự án được lưu trong trình duyệt của bạn</span><span>Hỗ trợ tiếng Việt · Times New Roman · Patrick Hand</span></footer>
       </main>
     );
   }
