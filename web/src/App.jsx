@@ -55,12 +55,11 @@ import {
   moveAnnotation,
 } from "./lib/project";
 import {
-  applyAnnotationBounds,
   canResizeAnnotation,
-  findResizeHandle,
-  getResizeHandles,
-  resizeBounds,
-  resizeTargetFromHandle,
+  canResizeFromEndpoints,
+  findAnnotationResizeHandle,
+  getAnnotationResizeHandles,
+  resizeAnnotationFromHandle,
   SELECTION_PADDING,
 } from "./lib/resize";
 import { adjustClipTiming } from "./lib/timeline";
@@ -238,7 +237,7 @@ function drawSelection(context, annotation) {
   context.setLineDash([8, 7]);
   context.strokeRect(x, y, width, height);
   context.setLineDash([]);
-  const handles = canResizeAnnotation(annotation) ? getResizeHandles(bounds, padding) : [];
+  const handles = canResizeAnnotation(annotation) ? getAnnotationResizeHandles(annotation, bounds, padding) : [];
   handles.forEach(({ x: handleX, y: handleY }) => {
     context.fillStyle = "#fffdf7";
     context.strokeStyle = "#d14343";
@@ -430,7 +429,7 @@ function PaperCanvas({ scene, selectedId, tool, currentMs, previewing, handMode,
       const selectedAnnotation = scene.annotations.find((annotation) => annotation.id === selectedId);
       if (canResizeAnnotation(selectedAnnotation)) {
         const selectedBounds = annotationBounds(selectedAnnotation, canvasRef.current.getContext("2d"));
-        const resizeHandle = selectedBounds && findResizeHandle(point, selectedBounds);
+        const resizeHandle = selectedBounds && findAnnotationResizeHandle(point, selectedAnnotation, selectedBounds);
         if (resizeHandle) {
           onTransformStart();
           pointerRef.current = {
@@ -482,7 +481,7 @@ function PaperCanvas({ scene, selectedId, tool, currentMs, previewing, handMode,
       if (tool === "select") {
         const selectedAnnotation = scene.annotations.find((annotation) => annotation.id === selectedId);
         const selectedBounds = canResizeAnnotation(selectedAnnotation) ? annotationBounds(selectedAnnotation, canvasRef.current.getContext("2d")) : null;
-        setResizeCursor(selectedBounds ? findResizeHandle(canvasPoint(event), selectedBounds)?.cursor || "" : "");
+        setResizeCursor(selectedBounds ? findAnnotationResizeHandle(canvasPoint(event), selectedAnnotation, selectedBounds)?.cursor || "" : "");
       }
       return;
     }
@@ -499,13 +498,12 @@ function PaperCanvas({ scene, selectedId, tool, currentMs, previewing, handMode,
         x: point.x - action.grabOffset.x,
         y: point.y - action.grabOffset.y,
       };
-      const target = resizeTargetFromHandle(handlePosition, action.handle);
-      const nextBounds = resizeBounds(action.bounds, action.handle, target, {
+      const resizedAnnotation = resizeAnnotationFromHandle(action.original, action.bounds, action.handle, handlePosition, {
         canvasWidth: VIDEO_WIDTH,
         canvasHeight: VIDEO_HEIGHT,
         preserveAspect: event.shiftKey,
       });
-      onUpdate(action.original.id, applyAnnotationBounds(action.original, nextBounds));
+      onUpdate(action.original.id, resizedAnnotation);
     } else if (action.mode === "draw") {
       const annotation = scene.annotations.find((item) => item.id === action.id);
       if (!annotation) return;
@@ -817,7 +815,7 @@ function AnnotationInspector({ selectedAnnotation, tool, onPatch, onDelete, onDu
             <em><CheckCircleIcon weight="fill" /> Đang chọn</em>
           </section>
           {canResizeAnnotation(selectedAnnotation) && (
-            <div className="resize-helper"><SelectionIcon weight="duotone" /><span><strong>Đổi kích thước trực tiếp</strong>Kéo tay nắm ở cạnh hoặc góc. Giữ Shift để khóa tỷ lệ.</span></div>
+            <div className="resize-helper"><SelectionIcon weight="duotone" /><span><strong>{canResizeFromEndpoints(selectedAnnotation) ? "Điều chỉnh chiều dài" : "Đổi kích thước trực tiếp"}</strong>{canResizeFromEndpoints(selectedAnnotation) ? "Kéo một trong hai đầu mút để đổi chiều dài và hướng." : "Kéo tay nắm ở cạnh hoặc góc. Giữ Shift để khóa tỷ lệ."}</span></div>
           )}
           {selectedAnnotation.kind === "text" && (
             <section className="inspector-section">

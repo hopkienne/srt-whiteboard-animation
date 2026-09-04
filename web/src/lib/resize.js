@@ -11,6 +11,7 @@ const HANDLE_ANCHORS = Object.freeze([
 
 export const SELECTION_PADDING = 10;
 export const MIN_ANNOTATION_SIZE = 36;
+export const MIN_LINE_LENGTH = 24;
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -21,7 +22,11 @@ function round(value) {
 }
 
 export function canResizeAnnotation(annotation) {
-  return annotation?.kind === "ellipse" || annotation?.kind === "image";
+  return annotation?.kind === "ellipse" || annotation?.kind === "image" || canResizeFromEndpoints(annotation);
+}
+
+export function canResizeFromEndpoints(annotation) {
+  return annotation?.kind === "underline" || annotation?.kind === "arrow";
 }
 
 export function getResizeHandles(bounds, padding = SELECTION_PADDING) {
@@ -41,6 +46,20 @@ export function getResizeHandles(bounds, padding = SELECTION_PADDING) {
 
 export function findResizeHandle(point, bounds, radius = 22) {
   return getResizeHandles(bounds).find((handle) => Math.hypot(point.x - handle.x, point.y - handle.y) <= radius) || null;
+}
+
+export function getAnnotationResizeHandles(annotation, bounds, padding = SELECTION_PADDING) {
+  if (!canResizeFromEndpoints(annotation)) return getResizeHandles(bounds, padding);
+  const first = annotation.points[0];
+  const last = annotation.points.at(-1);
+  return [
+    { id: "point-start", x: first[0], y: first[1], cursor: "move" },
+    { id: "point-end", x: last[0], y: last[1], cursor: "move" },
+  ];
+}
+
+export function findAnnotationResizeHandle(point, annotation, bounds, radius = 22) {
+  return getAnnotationResizeHandles(annotation, bounds).find((handle) => Math.hypot(point.x - handle.x, point.y - handle.y) <= radius) || null;
 }
 
 export function resizeTargetFromHandle(handlePosition, handleId, padding = SELECTION_PADDING) {
@@ -123,4 +142,40 @@ export function applyAnnotationBounds(annotation, bounds) {
     };
   }
   return annotation;
+}
+
+function resizeEndpoint(annotation, handleId, point, { canvasWidth, canvasHeight, minLength = MIN_LINE_LENGTH }) {
+  const points = annotation.points.map(([x, y]) => [x, y]);
+  const movingIndex = handleId === "point-start" ? 0 : points.length - 1;
+  const anchorIndex = movingIndex === 0 ? points.length - 1 : 0;
+  const anchor = points[anchorIndex];
+  const original = points[movingIndex];
+  let next = [clamp(point.x, 0, canvasWidth), clamp(point.y, 0, canvasHeight)];
+  let dx = next[0] - anchor[0];
+  let dy = next[1] - anchor[1];
+  let distance = Math.hypot(dx, dy);
+
+  if (distance < minLength) {
+    if (distance < 0.001) {
+      dx = original[0] - anchor[0];
+      dy = original[1] - anchor[1];
+      distance = Math.hypot(dx, dy) || 1;
+    }
+    next = [
+      clamp(anchor[0] + dx / distance * minLength, 0, canvasWidth),
+      clamp(anchor[1] + dy / distance * minLength, 0, canvasHeight),
+    ];
+  }
+
+  points[movingIndex] = next.map(round);
+  return { ...annotation, points };
+}
+
+export function resizeAnnotationFromHandle(annotation, bounds, handleId, handlePosition, options) {
+  if (canResizeFromEndpoints(annotation)) {
+    return resizeEndpoint(annotation, handleId, handlePosition, options);
+  }
+  const target = resizeTargetFromHandle(handlePosition, handleId);
+  const resizedBounds = resizeBounds(bounds, handleId, target, options);
+  return applyAnnotationBounds(annotation, resizedBounds);
 }

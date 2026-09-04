@@ -2,8 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   applyAnnotationBounds,
+  canResizeAnnotation,
+  findAnnotationResizeHandle,
   findResizeHandle,
+  getAnnotationResizeHandles,
   getResizeHandles,
+  resizeAnnotationFromHandle,
   resizeBounds,
   resizeTargetFromHandle,
 } from "../src/lib/resize.js";
@@ -57,4 +61,41 @@ test("applies resized bounds to ellipse and image annotations", () => {
     previewWidth: 420,
     previewHeight: 180,
   });
+});
+
+test("exposes endpoint handles for underline and arrow annotations", () => {
+  const underline = { kind: "underline", points: [[120, 340], [510, 340]] };
+  const arrow = { kind: "arrow", points: [[80, 120], [300, 420]] };
+
+  assert.equal(canResizeAnnotation(underline), true);
+  assert.equal(canResizeAnnotation(arrow), true);
+  assert.equal(canResizeAnnotation({ kind: "path", points: [[0, 0], [1, 1]] }), false);
+  assert.deepEqual(getAnnotationResizeHandles(underline, bounds), [
+    { id: "point-start", x: 120, y: 340, cursor: "move" },
+    { id: "point-end", x: 510, y: 340, cursor: "move" },
+  ]);
+  assert.equal(findAnnotationResizeHandle({ x: 505, y: 345 }, underline, bounds)?.id, "point-end");
+});
+
+test("changes underline length by moving one endpoint and keeps the other fixed", () => {
+  const underline = { id: "u", kind: "underline", points: [[120, 340], [510, 340]] };
+  const resized = resizeAnnotationFromHandle(underline, bounds, "point-start", { x: 40, y: 360 }, canvas);
+
+  assert.deepEqual(resized.points, [[40, 360], [510, 340]]);
+  assert.deepEqual(underline.points, [[120, 340], [510, 340]]);
+});
+
+test("changes arrow length and direction while keeping endpoints inside the canvas", () => {
+  const arrow = { id: "a", kind: "arrow", points: [[80, 120], [300, 420]] };
+  assert.deepEqual(
+    resizeAnnotationFromHandle(arrow, bounds, "point-end", { x: 800, y: -20 }, canvas).points,
+    [[80, 120], [720, 0]],
+  );
+});
+
+test("keeps resized line annotations long enough to remain usable", () => {
+  const underline = { id: "u", kind: "underline", points: [[100, 100], [300, 100]] };
+  const resized = resizeAnnotationFromHandle(underline, bounds, "point-end", { x: 105, y: 100 }, canvas);
+
+  assert.deepEqual(resized.points, [[100, 100], [124, 100]]);
 });
